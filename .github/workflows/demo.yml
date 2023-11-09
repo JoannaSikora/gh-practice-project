@@ -9,13 +9,13 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v3
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      - name: Get & Cache dependencies
+        id: cache
+        uses: ./.github/actions/cached-deps
         with:
-          path: ~/.npm
-          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
-      - name: Install dependencies
-        run: npm ci
+          cashing: 'false'
+      - name: Output cache info
+        run: echo "cache used?" ${{ steps.cache.outputs.used-cache }}
       - name: Lint code
         run: npm run lint
       - name: Test code
@@ -35,15 +35,8 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v3
-      - name: Cache dependencies
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
-      - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci
+      - name: Get & Cache dependencies
+        uses: ./.github/actions/cached-deps
       - name: Build website
         run: npm run build
       - name: Publish js file name
